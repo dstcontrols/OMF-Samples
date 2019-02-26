@@ -1,0 +1,131 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>OSIsoft.Identity.AuthenticationHandler</name>
+    </assembly>
+    <members>
+        <member name="T:OSIsoft.Identity.AuthenticationHandler">
+            <summary>
+            DelegatingHandler to assist with authenticating with Identity Server.
+            </summary>
+        </member>
+        <member name="F:OSIsoft.Identity.AuthenticationHandler.OcsScope">
+            <summary>
+            OCS scope.
+            </summary>
+        </member>
+        <member name="F:OSIsoft.Identity.AuthenticationHandler.AuthorizationHeaderName">
+            <summary>
+            Authorization header name.
+            </summary>
+        </member>
+        <member name="F:OSIsoft.Identity.AuthenticationHandler.BearerAuthenticationScheme">
+            <summary>
+            Bearer authentication scheme.
+            </summary>
+        </member>
+        <member name="F:OSIsoft.Identity.AuthenticationHandler.IdentityResourceSuffix">
+            <summary>
+            Identity resource suffix.
+            </summary>
+        </member>
+        <member name="F:OSIsoft.Identity.AuthenticationHandler.AccessTokenExpiryDelta">
+            <summary>
+            Time (in seconds) to subtract from the Access Token expiry time to allow for successful HTTP requests to OCS resources 
+            using a cached Access Token.
+            </summary>
+        </member>
+        <member name="F:OSIsoft.Identity.AuthenticationHandler._serviceBaseUrl">
+            <summary>
+            Resource URL for OCS.
+            </summary>
+        </member>
+        <member name="F:OSIsoft.Identity.AuthenticationHandler._clientId">
+            <summary>
+            Client Id.
+            </summary>
+        </member>
+        <member name="F:OSIsoft.Identity.AuthenticationHandler._clientSecret">
+            <summary>
+            Client secret.
+            </summary>
+        </member>
+        <member name="F:OSIsoft.Identity.AuthenticationHandler._accessToken">
+            <summary>
+            Cached Access Token.
+            </summary>
+        </member>
+        <member name="F:OSIsoft.Identity.AuthenticationHandler._accessTokenExpiry">
+            <summary>
+            Access Token expiry time.
+            </summary>
+        </member>
+        <member name="M:OSIsoft.Identity.AuthenticationHandler.#ctor(System.Uri,System.String,System.String)">
+            <summary>
+            Create an instance of this DelegatingHandler.
+            </summary>
+            <param name="serviceBaseUrl">Base URL for OCS (e.g., "https://dat-b.osisoft.com")</param>
+            <param name="clientId">Client Id of the Client to authenticate.</param>
+            <param name="clientSecret">Client Secret of the Client to authenticate.</param>
+            <exception cref="T:System.ArgumentNullException">One or more of the arguments are null.</exception>
+            <exception cref="T:System.ArgumentException">One or more of the arguments only contain whitespace.</exception>
+        </member>
+        <member name="M:OSIsoft.Identity.AuthenticationHandler.SendAsync(System.Net.Http.HttpRequestMessage,System.Threading.CancellationToken)">
+            <summary>
+            Sends an HTTP request to the inner handler to send to the server as an asynchronous operation.
+            </summary>
+            <param name="request">The HTTP request message to send to the server.</param>
+            <param name="cancellationToken">A cancellation token to cancel operation.</param>
+            <returns>The task object representing the asynchronous operation.</returns>
+            <exception cref="T:System.ArgumentNullException">The request, resource, Client Id or Client Secret were null.</exception>
+            <exception cref="T:OSIsoft.Identity.AuthenticationHandlerException">Failure to authenticate and acquire an Access Token.</exception>
+        </member>
+        <member name="M:OSIsoft.Identity.AuthenticationHandler.GetAccessToken(System.Threading.CancellationToken)">
+            <summary>
+            Get the Access Token. If a valid cached Access Token is available, it will be returned - otherwise we authenticate and
+            acquire an Access Token.
+            </summary>
+            <param name="cancellationToken">A cancellation token to cancel operation.</param>
+            <returns>Access Token.</returns>
+        </member>
+        <member name="M:OSIsoft.Identity.AuthenticationHandler.CachedAccessTokenExpired">
+            <summary>
+            Determines whether the cached Access Token has expired.
+            </summary>
+            <returns>Returns true if the Access Token has expired, false if it hasn't.</returns>
+        </member>
+        <member name="T:OSIsoft.Identity.AuthenticationHandlerException">
+            <summary>
+            AuthenticationHandlerException - custom exception thrown by the AuthenticationHandler.
+            </summary>
+        </member>
+        <member name="M:OSIsoft.Identity.AuthenticationHandlerException.#ctor">
+            <summary>
+            Initializes a new instance of the AuthenticationHandlerException class.
+            </summary>
+        </member>
+        <member name="M:OSIsoft.Identity.AuthenticationHandlerException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the AuthenticationHandlerException class with a specified error message.
+            </summary>
+            <param name="message">The message that describes the error.</param>
+        </member>
+        <member name="M:OSIsoft.Identity.AuthenticationHandlerException.#ctor(System.String,System.Exception)">
+            <summary>
+            Initializes a new instance of the AuthenticationHandlerException class with a specified error
+            message and a reference to the inner exception that is the cause of this exception.
+            </summary>
+            <param name="message">The error message that explains the reason for the exception.</param>
+            <param name="innerException">The exception that is the cause of the current exception, or a null reference if no inner exception is specified.</param>
+        </member>
+        <member name="M:OSIsoft.Identity.AuthenticationHandlerException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Initializes a new instance of the AuthenticationHandlerException class with serialized data.
+            </summary>
+            <param name="info">The System.Runtime.Serialization.SerializationInfo that holds the serialized object data about the exception being thrown.</param>
+            <param name="context">The System.Runtime.Serialization.StreamingContext that contains contextual information about the source or destination.</param>
+            <exception cref="T:System.ArgumentNullException">The info parameter is null.</exception>
+            <exception cref="T:System.Runtime.Serialization.SerializationException">The class name is null or System.Exception.HResult is zero (0).</exception>
+        </member>
+    </members>
+</doc>

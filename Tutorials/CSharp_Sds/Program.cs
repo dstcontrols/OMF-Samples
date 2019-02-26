@@ -26,9 +26,10 @@ namespace IngressServiceAPI
         {
             // Set this up in your app.config
             string ingressServiceUrl = ConfigurationManager.AppSettings["IngressServiceUrl"];
-            string producerToken = ConfigurationManager.AppSettings["ProducerToken"];
+            string clientId = ConfigurationManager.AppSettings["ClientId"];
+            string clientSecret = ConfigurationManager.AppSettings["ClientSecret"];
 
-            IngressClient client = new IngressClient(ingressServiceUrl, producerToken);
+            IngressClient client = new IngressClient(ingressServiceUrl, clientId, clientSecret);
 
             // Use compression when sending data.  For such small sample messages, compression doesn't 
             // save us much space, but we're doing it here for demonstration sake.

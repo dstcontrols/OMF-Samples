@@ -28,7 +28,8 @@ namespace IngressServiceAPI.API
     {
         public const string CurrentOMFVersion = "1.0";
         private readonly HttpClient _client;
-        private string _producerToken;
+        private string _tenantAdminToken;
+        private const string AccessTokenKeyName = "access_token";
 
         public bool UseCompression { get; set; }
 
@@ -37,11 +38,12 @@ namespace IngressServiceAPI.API
         /// </summary>
         /// <param name="serviceUrl">The HTTP endpoint for the ingress service.</param>
         /// <param name="producerToken">Security token used to authenticate with the service.</param>     
-        public IngressClient(string serviceUrl, string producerToken)
+        public IngressClient(string serviceUrl, string clientId, string clientSecret)
         {
             _client = new HttpClient();
             _client.BaseAddress = new Uri(serviceUrl);
-            _producerToken = producerToken;
+            _tenantAdminToken = GetTenantAdminTokenAsync(clientId, clientSecret).Result;
+            _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _tenantAdminToken);
         }
 
         /// <summary>
@@ -83,7 +85,6 @@ namespace IngressServiceAPI.API
         private async Task SendMessageAsync(byte[] body, MessageType msgType, MessageAction action)
         {
             Message msg = new Message();
-            msg.ProducerToken = _producerToken;
             msg.MessageType = msgType;
             msg.Action = action;
             msg.MessageFormat = MessageFormat.JSON;
@@ -95,6 +96,7 @@ namespace IngressServiceAPI.API
 
             HttpContent content = HttpContentFromMessage(msg);
             HttpResponseMessage response = await _client.PostAsync("" /* use the base URI */, content);
+            var json = await response.Content.ReadAsStringAsync();
             response.EnsureSuccessStatusCode();
         }
 
@@ -106,6 +108,28 @@ namespace IngressServiceAPI.API
                 content.Headers.Add(header.Key, header.Value);
             }
             return content;
+        }
+
+        private async Task<string> GetTenantAdminTokenAsync(string clientId, string clientSecret)
+        {
+            var requestContent = new MultipartFormDataContent();
+            var values = new Dictionary<string, string>
+            {
+                { "grant_type", "client_credentials" },
+                { "client_id", clientId },
+                { "client_secret", clientSecret }
+            };
+            var content = new FormUrlEncodedContent(values);
+            requestContent.Add(content);
+            HttpResponseMessage response = await _client.PostAsync("https://historianingress.osipi.com/identity/connect/token", content);
+            response.EnsureSuccessStatusCode();
+            string json = await response.Content.ReadAsStringAsync();
+            var jsonDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
+            if (!jsonDictionary.TryGetValue(AccessTokenKeyName, out string tenantAdminToken))
+            {
+                throw new KeyNotFoundException("Unable to get tenant admin token");
+            }
+            return tenantAdminToken;
         }
 
         #region IDisposable
