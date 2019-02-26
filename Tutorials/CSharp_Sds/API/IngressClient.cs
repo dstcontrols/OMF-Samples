@@ -30,6 +30,8 @@ namespace IngressServiceAPI.API
         private readonly HttpClient _client;
         private string _tenantAdminToken;
         private const string AccessTokenKeyName = "access_token";
+        private const string IdentityServerEndpoint = "Identity/Connect/Token";
+        private readonly string _omfEndpoint;
 
         public bool UseCompression { get; set; }
 
@@ -38,10 +40,11 @@ namespace IngressServiceAPI.API
         /// </summary>
         /// <param name="serviceUrl">The HTTP endpoint for the ingress service.</param>
         /// <param name="producerToken">Security token used to authenticate with the service.</param>     
-        public IngressClient(string serviceUrl, string clientId, string clientSecret)
+        public IngressClient(string serviceUrl, string tenantId, string namesapceId, string clientId, string clientSecret)
         {
             _client = new HttpClient();
             _client.BaseAddress = new Uri(serviceUrl);
+            _omfEndpoint = $"api/tenants/{tenantId}/namespaces/{namesapceId}/omf2";
             _tenantAdminToken = GetTenantAdminTokenAsync(clientId, clientSecret).Result;
             _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _tenantAdminToken);
         }
@@ -95,7 +98,7 @@ namespace IngressServiceAPI.API
                 msg.Compress(MessageCompression.GZip);
 
             HttpContent content = HttpContentFromMessage(msg);
-            HttpResponseMessage response = await _client.PostAsync("" /* use the base URI */, content);
+            HttpResponseMessage response = await _client.PostAsync(_omfEndpoint, content);
             var json = await response.Content.ReadAsStringAsync();
             response.EnsureSuccessStatusCode();
         }
@@ -121,7 +124,7 @@ namespace IngressServiceAPI.API
             };
             var content = new FormUrlEncodedContent(values);
             requestContent.Add(content);
-            HttpResponseMessage response = await _client.PostAsync("https://historianingress.osipi.com/identity/connect/token", content);
+            HttpResponseMessage response = await _client.PostAsync(IdentityServerEndpoint, content);
             response.EnsureSuccessStatusCode();
             string json = await response.Content.ReadAsStringAsync();
             var jsonDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
