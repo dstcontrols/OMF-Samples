@@ -1,4 +1,4 @@
-﻿//Copyright 2018-2019 OSIsoft, LLC
+﻿//Copyright 2019 OSIsoft, LLC
 //
 //Licensed under the Apache License, Version 2.0 (the "License");
 //you may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@ namespace IngressServiceAPI.API
             {
                 BaseAddress = new Uri(serviceUrl)
             };
-            _omfSuffix = $"api/tenants/{tenantId}/namespaces/{namesapceId}/omf2";    
+            _omfSuffix = $"api/tenants/{tenantId}/namespaces/{namesapceId}/omf";    
         }
 
         /// <summary>
