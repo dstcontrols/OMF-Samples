@@ -133,7 +133,7 @@ namespace IngressServiceAPI.API
         }
 
         /// <summary>
-        /// Converts a Message to HttpContent
+        /// Converts a Message to HttpContent.
         /// </summary>
         /// <param name="msg">The message to convert.</param>
         /// <returns></returns>
