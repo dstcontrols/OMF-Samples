@@ -1,4 +1,18 @@
-﻿using Newtonsoft.Json;
+﻿//Copyright 2019 OSIsoft, LLC
+//
+//Licensed under the Apache License, Version 2.0 (the "License");
+//you may not use this file except in compliance with the License.
+//You may obtain a copy of the License at
+//
+//<http://www.apache.org/licenses/LICENSE-2.0>
+//
+//Unless required by applicable law or agreed to in writing, software
+//distributed under the License is distributed on an "AS IS" BASIS,
+//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//See the License for the specific language governing permissions and
+//limitations under the License.
+
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -13,12 +27,6 @@ namespace IngressServiceAPI.API
     public class AuthenticationHandler : DelegatingHandler
     {
         #region Private Constants
-
-        /// <summary>
-        /// OCS scope.
-        /// </summary>
-        private const string OcsScope = "ocsapi";
-
         /// <summary>
         /// Authorization header name.
         /// </summary>
@@ -30,19 +38,15 @@ namespace IngressServiceAPI.API
         private const string BearerAuthenticationScheme = "Bearer";
 
         /// <summary>
-        /// Identity resource suffix.
-        /// </summary>
-        private const string IdentityResourceSuffix = "identity";
-
-        /// <summary>
         /// Time (in seconds) to subtract from the Access Token expiry time to allow for successful HTTP requests to OCS resources 
         /// using a cached Access Token.
         /// </summary>
         private const int AccessTokenExpiryDelta = 30;
 
-        private const string AccessTokenKeyName = "access_token";
-        private const string AccessTokenExpiryKey = "expires_in";
-        private const string IdentityServerEndpoint = "Identity/Connect/Token";
+        /// <summary>
+        /// Identity resource suffix.
+        /// </summary>
+        private const string IdentityResourceSuffix = "Identity/Connect/Token";
 
         #endregion
 
@@ -154,7 +158,7 @@ namespace IngressServiceAPI.API
                 return _accessToken;
             }
 
-            // Discover endpoints from metadata.
+            // Obtain a token from Identity Server via client credentials
             using (var client = new HttpClient())
             {
                 var requestContent = new MultipartFormDataContent();
@@ -166,20 +170,15 @@ namespace IngressServiceAPI.API
                 };
                 var content = new FormUrlEncodedContent(values);
                 requestContent.Add(content);
-                HttpResponseMessage response = await client.PostAsync(new Uri(_serviceBaseUrl, IdentityServerEndpoint), content);
+
+                HttpResponseMessage response = await client.PostAsync(new Uri(_serviceBaseUrl, IdentityResourceSuffix), content);
                 response.EnsureSuccessStatusCode();
+
                 string json = await response.Content.ReadAsStringAsync();
-                var jsonDictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
-                if (!jsonDictionary.TryGetValue(AccessTokenKeyName, out object tenantAdminToken))
-                {
-                    throw new KeyNotFoundException("Unable to get tenant admin token");
-                }
-                if (!jsonDictionary.TryGetValue(AccessTokenExpiryKey, out object accessTokenExpiry))
-                {
-                    throw new KeyNotFoundException("Unable to get token expiration");
-                }
-                _accessToken = (string) tenantAdminToken;
-                _accessTokenExpiry = DateTime.UtcNow.AddSeconds((long) accessTokenExpiry - AccessTokenExpiryDelta);
+                AccessToken tenantAdminToken = JsonConvert.DeserializeObject<AccessToken>(json);
+
+                _accessToken = tenantAdminToken.TokenString;
+                _accessTokenExpiry = DateTime.UtcNow.AddSeconds(tenantAdminToken.ExpiryTime - AccessTokenExpiryDelta);
                 return _accessToken;
             }
         }

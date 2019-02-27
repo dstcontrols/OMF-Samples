@@ -26,17 +26,39 @@ namespace IngressServiceAPI.API
     /// </summary>
     public class IngressClient : IDisposable
     {
-        public const string CurrentOMFVersion = "1.0";
+        #region Private Members
+        /// <summary>
+        /// The http client used to make calls
+        /// </summary>
         private readonly HttpClient _httpClient;
-        private readonly string _omfEndpoint;
-
-        public bool UseCompression { get; set; }
 
         /// <summary>
-        /// Create an IngressClient by passing it the required connection information.
+        /// The OMF suffix
         /// </summary>
-        /// <param name="serviceUrl">The HTTP endpoint for the ingress service.</param>
-        /// <param name="producerToken">Security token used to authenticate with the service.</param>     
+        private readonly string _omfSuffix;
+        #endregion
+
+        #region Public Members
+        /// <summary>
+        /// The current OMF version 
+        /// </summary>
+        public const string CurrentOMFVersion = "1.0";
+
+        /// <summary>
+        /// A boolean indicating if compression will be used 
+        /// </summary>
+        public bool UseCompression { get; set; }
+        #endregion
+
+        #region Public Methods
+        /// <summary>
+        /// Create an IngressClient by passing it the required connection information, and credentials to authenticate.
+        /// </summary>
+        /// <param name="serviceBaseUrl">Base URL for OCS (e.g., "https://dat-b.osisoft.com")</param>
+        /// <param name="tenantId">The tenantId for the tenant to send data to.</param> 
+        /// <param name="namesapceId">The namespaceId for the namespace to send data to.</param>
+        /// <param name="clientId">Client Id of the Client to authenticate.</param>
+        /// <param name="clientSecret">Client Secret of the Client to authenticate.</param>
         public IngressClient(string serviceUrl, string tenantId, string namesapceId, string clientId, string clientSecret)
         {
             AuthenticationHandler authenticationHandler = new AuthenticationHandler(new Uri(serviceUrl), clientId, clientSecret);
@@ -44,7 +66,7 @@ namespace IngressServiceAPI.API
             {
                 BaseAddress = new Uri(serviceUrl)
             };
-            _omfEndpoint = $"api/tenants/{tenantId}/namespaces/{namesapceId}/omf2";    
+            _omfSuffix = $"api/tenants/{tenantId}/namespaces/{namesapceId}/omf2";    
         }
 
         /// <summary>
@@ -82,7 +104,16 @@ namespace IngressServiceAPI.API
             var bytes = Encoding.UTF8.GetBytes(json);
             return SendMessageAsync(bytes, MessageType.Data, MessageAction.Create);
         }
+        #endregion
 
+        #region Private Methods
+        /// <summary>
+        /// Sends the OMF message via an HTTP POST request.
+        /// </summary>
+        /// <param name="body">The OMF message body.</param>
+        /// <param name="msgType">The OMF message type.</param>
+        /// <param name="action">The OMF message action.</param>
+        /// <returns></returns>
         private async Task SendMessageAsync(byte[] body, MessageType msgType, MessageAction action)
         {
             Message msg = new Message();
@@ -96,11 +127,16 @@ namespace IngressServiceAPI.API
                 msg.Compress(MessageCompression.GZip);
 
             HttpContent content = HttpContentFromMessage(msg);
-            HttpResponseMessage response = await _httpClient.PostAsync(_omfEndpoint, content);
+            HttpResponseMessage response = await _httpClient.PostAsync(_omfSuffix, content);
             string json = await response.Content.ReadAsStringAsync();
             response.EnsureSuccessStatusCode();
         }
 
+        /// <summary>
+        /// Converts a Message to HttpContent
+        /// </summary>
+        /// <param name="msg">The message to convert.</param>
+        /// <returns></returns>
         private HttpContent HttpContentFromMessage(Message msg)
         {
             ByteArrayContent content = new ByteArrayContent(msg.Body);
@@ -110,7 +146,7 @@ namespace IngressServiceAPI.API
             }
             return content;
         }
-
+        #endregion
 
         #region IDisposable
         private bool _disposed = false; // To detect redundant calls
