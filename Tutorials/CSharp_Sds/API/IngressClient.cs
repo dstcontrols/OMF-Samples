@@ -27,10 +27,7 @@ namespace IngressServiceAPI.API
     public class IngressClient : IDisposable
     {
         public const string CurrentOMFVersion = "1.0";
-        private readonly HttpClient _client;
-        private string _tenantAdminToken;
-        private const string AccessTokenKeyName = "access_token";
-        private const string IdentityServerEndpoint = "Identity/Connect/Token";
+        private readonly HttpClient _httpClient;
         private readonly string _omfEndpoint;
 
         public bool UseCompression { get; set; }
@@ -42,11 +39,12 @@ namespace IngressServiceAPI.API
         /// <param name="producerToken">Security token used to authenticate with the service.</param>     
         public IngressClient(string serviceUrl, string tenantId, string namesapceId, string clientId, string clientSecret)
         {
-            _client = new HttpClient();
-            _client.BaseAddress = new Uri(serviceUrl);
-            _omfEndpoint = $"api/tenants/{tenantId}/namespaces/{namesapceId}/omf2";
-            _tenantAdminToken = GetTenantAdminTokenAsync(clientId, clientSecret).Result;
-            _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _tenantAdminToken);
+            AuthenticationHandler authenticationHandler = new AuthenticationHandler(new Uri(serviceUrl), clientId, clientSecret);
+            _httpClient = new HttpClient(authenticationHandler)
+            {
+                BaseAddress = new Uri(serviceUrl)
+            };
+            _omfEndpoint = $"api/tenants/{tenantId}/namespaces/{namesapceId}/omf2";    
         }
 
         /// <summary>
@@ -98,8 +96,8 @@ namespace IngressServiceAPI.API
                 msg.Compress(MessageCompression.GZip);
 
             HttpContent content = HttpContentFromMessage(msg);
-            HttpResponseMessage response = await _client.PostAsync(_omfEndpoint, content);
-            var json = await response.Content.ReadAsStringAsync();
+            HttpResponseMessage response = await _httpClient.PostAsync(_omfEndpoint, content);
+            string json = await response.Content.ReadAsStringAsync();
             response.EnsureSuccessStatusCode();
         }
 
@@ -113,27 +111,6 @@ namespace IngressServiceAPI.API
             return content;
         }
 
-        private async Task<string> GetTenantAdminTokenAsync(string clientId, string clientSecret)
-        {
-            var requestContent = new MultipartFormDataContent();
-            var values = new Dictionary<string, string>
-            {
-                { "grant_type", "client_credentials" },
-                { "client_id", clientId },
-                { "client_secret", clientSecret }
-            };
-            var content = new FormUrlEncodedContent(values);
-            requestContent.Add(content);
-            HttpResponseMessage response = await _client.PostAsync(IdentityServerEndpoint, content);
-            response.EnsureSuccessStatusCode();
-            string json = await response.Content.ReadAsStringAsync();
-            var jsonDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
-            if (!jsonDictionary.TryGetValue(AccessTokenKeyName, out string tenantAdminToken))
-            {
-                throw new KeyNotFoundException("Unable to get tenant admin token");
-            }
-            return tenantAdminToken;
-        }
 
         #region IDisposable
         private bool _disposed = false; // To detect redundant calls
@@ -144,7 +121,7 @@ namespace IngressServiceAPI.API
             {
                 if (disposing)
                 {
-                    _client.Dispose();
+                    _httpClient.Dispose();
                 }
 
                 _disposed = true;
