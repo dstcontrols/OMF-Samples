@@ -9,8 +9,8 @@ os.dupterm(uart)
 
 # Specify Wi-Fi credentials
 wlan = WLAN()
-ssid = 'thumper2.4'
-password = 'concretebunkerbiggameday'
+ssid = 'putyourWiFiSSIDHere'
+password = 'putyourWiFiPasswordHere'
 
 # Function for initializing Wi-Fi
 def wifi_init():
