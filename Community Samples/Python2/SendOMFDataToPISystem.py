@@ -225,10 +225,10 @@ def send_omf_message_to_endpoint(action, message_type, message_json):
 # Suppress insecure HTTPS warnings, if an untrusted certificate is used by the target endpoint
 # Remove if targetting trusted targets
 if not VERIFY_SSL:
-	try:
-		requests.packages.urllib3.disable_warnings()
-	except Exception as ex:
-		# Log any error, if it occurs
+    try:
+        requests.packages.urllib3.disable_warnings()
+    except Exception as ex:
+        # Log any error, if it occurs
         print(str(datetime.datetime.now()) + " Non-fatal error when disabling SSL warnings: " + str(ex))
 
 print(
