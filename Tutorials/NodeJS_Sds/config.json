@@ -1,6 +1,5 @@
 {
-    "producertoken": "<set producertoken here>",
-    "endpoint": "https://<host>:<port>/ingress/messages",
-    "interval": 3000,
-    "verifyCert": false
+    "bearertoken": "<set bearer token here>",
+    "endpoint": "https:dat-b.osisoft.com",
+    "interval": 3000
 }
