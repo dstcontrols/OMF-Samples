@@ -1,5 +1,5 @@
 {
     "bearertoken": "<set bearer token here>",
-    "endpoint": "https:dat-b.osisoft.com",
+    "endpoint": "https://dat-b.osisoft.com",
     "interval": 3000
 }
