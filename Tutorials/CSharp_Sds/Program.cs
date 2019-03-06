@@ -37,7 +37,6 @@ namespace IngressServiceAPI
             string clientId = configuration["ClientId"];
             string clientSecret = configuration["ClientSecret"];
 
-
             IngressClient client = new IngressClient(address, tenantId, namespaceId, clientId, clientSecret);
 
             // Use compression when sending data.  For such small sample messages, compression doesn't 
