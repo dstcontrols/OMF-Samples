@@ -22,7 +22,7 @@ nconf.file({ file: './config.json' });
 
 // setup common headers
 var msgHeader = {
-    producertoken: nconf.get('producertoken'),
+    authorization: 'bearer ' + nconf.get('bearertoken'),
     messageformat: 'JSON',
     omfversion: '1.0'
 };
@@ -39,7 +39,7 @@ var streamName = 'os-monitor.' + monitor.os.hostname();
 
 function sendType(cb){
     //register the type
-    msgHeader.messagetype = 'type';
+	msgHeader.messagetype = 'type';
     options.body = JSON.stringify([{
 	id: 'os-monitor.event',
 	type: 'object',
