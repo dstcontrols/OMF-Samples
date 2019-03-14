@@ -1,4 +1,4 @@
-﻿//Copyright 2018 OSIsoft, LLC
+﻿//Copyright 2019 OSIsoft, LLC
 //
 //Licensed under the Apache License, Version 2.0 (the "License");
 //you may not use this file except in compliance with the License.
@@ -13,9 +13,10 @@
 //limitations under the License.
 
 using IngressServiceAPI.API;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
+using System.IO;
 using System.Threading;
 
 namespace IngressServiceAPI
@@ -24,11 +25,19 @@ namespace IngressServiceAPI
     {
         static void Main(string[] args)
         {
-            // Set this up in your app.config
-            string ingressServiceUrl = ConfigurationManager.AppSettings["IngressServiceUrl"];
-            string producerToken = ConfigurationManager.AppSettings["ProducerToken"];
+            IConfigurationBuilder builder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json");
+            IConfiguration configuration = builder.Build();
 
-            IngressClient client = new IngressClient(ingressServiceUrl, producerToken);
+            // ==== Client constants ====
+            string tenantId = configuration["TenantId"];
+            string namespaceId = configuration["NamespaceId"];
+            string address = configuration["Address"];
+            string clientId = configuration["ClientId"];
+            string clientSecret = configuration["ClientSecret"];
+
+            IngressClient client = new IngressClient(address, tenantId, namespaceId, clientId, clientSecret);
 
             // Use compression when sending data.  For such small sample messages, compression doesn't 
             // save us much space, but we're doing it here for demonstration sake.

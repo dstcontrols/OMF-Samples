@@ -12,18 +12,19 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace IngressServiceAPI.API
 {
-    /// <summary>
-    /// Holds a set of values for a stream.  The property names ContainerId and 
-    /// Values are defined in the OMF spec.  This class is serialized into an 
-    /// OMF message.
-    /// </summary>
-    public class StreamValues
+    public class AccessToken
     {
-        public string ContainerId { get; set; }
-        public IEnumerable<object> Values { get; set; }
+        [JsonProperty("access_token")]
+        public string TokenString { get; set; }
+
+        [JsonProperty("expires_in")]
+        public int ExpiryTime { get; set; }
+
+        [JsonProperty("token_type")]
+        public string TokenType { get; set; }
     }
 }

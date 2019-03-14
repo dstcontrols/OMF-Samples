@@ -1,4 +1,4 @@
-﻿//Copyright 2018 OSIsoft, LLC
+﻿//Copyright 2019 OSIsoft, LLC
 //
 //Licensed under the Apache License, Version 2.0 (the "License");
 //you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ namespace IngressServiceAPI.API
     /// </summary>
     public class Message
     {
-        public const string HeaderKey_ProducerToken = "producertoken";
         public const string HeaderKey_MessageType = "messagetype";
         public const string HeaderKey_MessageFormat = "messageformat";
         public const string HeaderKey_MessageCompression = "compression";
@@ -36,19 +35,6 @@ namespace IngressServiceAPI.API
         public IDictionary<string, string> Headers { get; private set; }
         public byte[] Body { get; set; }
 
-        public string ProducerToken
-        {
-            get
-            {
-                string token = string.Empty;
-                Headers.TryGetValue(HeaderKey_ProducerToken, out token);
-                return token;
-            }
-            set
-            {
-                Headers[HeaderKey_ProducerToken] = value;
-            }
-        }
 
         public MessageType MessageType
         {
